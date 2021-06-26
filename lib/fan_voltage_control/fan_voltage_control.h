@@ -5,5 +5,6 @@ class AD5272_Class {
     void setup(uint8_t);
     void lift_write_protection(void);
     void set_rdac(uint16_t);
+    void set_fan_voltage(float);
 };
 
