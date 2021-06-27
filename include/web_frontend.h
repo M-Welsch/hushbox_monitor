@@ -1,27 +1,31 @@
 #include <ESP8266WiFi.h>
 
-void handle_wifi(WiFiClient client);
+String heading(const char *text, int level);
 
 /* HTML Content */
-const char MAIN_page_top[] PROGMEM = R"=====(
+const char HEAD[] = R"=====(
 <!DOCTYPE html>
+<title>Hushbox &Uuml;berwachung</title>
 <html>
 <body>
 )=====";
 
-const char MAIN_page_bot[] PROGMEM = R"=====(
-<h2>Circuits4you<h2>
-<h3> HTML Form ESP8266</h3>
-
-<form action="/action_page">
-  First name:<br>
-  <input type="text" name="firstname" value="Mickey">
+const char FORM[] = R"=====(
+<br>
+<form action="/change_values">
+  <table>
+    <tr><td>New Overtemperature Threshold 0</td><td><input type="text" name="ot0" placeholder="new value ..."></td></tr>
+    <tr><td>New Overtemperature Threshold 1</td><td><input type="text" name="ot1" placeholder="new value ..."></td></tr>
+    <tr><td>New Lightsensor Threshold 0</td><td><input type="text" name="light_th0" placeholder="new value ..."></td></tr>
+    <tr><td>New Lightsensor Threshold 1</td><td><input type="text" name="light_th1" placeholder="new value ..."></td></tr>
+    <tr><td>New Vfan</td><td><input type="text" name="vfan" placeholder="new value ..."></td></tr>
+  </table>
   <br>
-  Last name:<br>
-  <input type="text" name="lastname" value="Mouse">
-  <br><br>
   <input type="submit" value="Submit">
 </form> 
+)=====";
+
+const char FOOT[] = R"=====(
 
 </body>
 </html>

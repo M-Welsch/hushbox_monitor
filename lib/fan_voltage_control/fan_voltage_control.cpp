@@ -34,3 +34,8 @@ void AD5272_Class::set_fan_voltage(float voltage) {
   if (rdac > 970) rdac = 970;
   set_rdac(rdac);
 }
+
+
+// uint16_t get_rdac() {
+//   return 0;
+// }

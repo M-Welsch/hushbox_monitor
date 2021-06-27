@@ -3,6 +3,7 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>
+#include <string>
 
 #include "adc.h"
 #include "control_data.h"
@@ -21,8 +22,44 @@ ESP8266WebServer server(80);
 struct ControlData control_data;
 
 void handleRoot() {
-  String s = concat_data_table(&control_data);
+  String s = HEAD;
+  s.concat(heading("Hushbox", 1));
+  s.concat(heading("Current Data", 2));
+  s.concat(concat_data_table(&control_data));
+  s.concat(heading("Change Parameters", 2));
+  s.concat(FORM);
+  s.concat(FOOT);
   server.send(200, "text/html", s); //Send web page
+}
+
+void handleChangeValues() {
+  
+  String ot0 = server.arg("ot0");
+  if (ot0.compareTo("") != 0) {
+    control_data.overtemperature_threshold_0 = ot0.toFloat();
+  }
+  String ot1 = server.arg("ot1");
+  if (ot1.compareTo("") != 0) {
+    control_data.overtemperature_threshold_1 = ot1.toFloat();
+  }
+  String light_th0 = server.arg("light_th0");
+  if (light_th0.compareTo("") != 0) {
+    control_data.lightsensor0_threshold = light_th0.toFloat();
+  }
+  String light_th1 = server.arg("light_th1");
+  if (light_th1.compareTo("") != 0) {
+    control_data.lightsensor1_threshold = light_th1.toFloat();
+  }
+  String vfan = server.arg("Vfan");
+  if (vfan.compareTo("") != 0) {
+      fan_voltage_control.set_fan_voltage(vfan.toFloat());
+      // control_data.rdac = fan_voltage_control.get_rdac();
+  }
+
+  String s = HEAD;
+  s = s + "OT0: " + ot0 +"<br>, OT1: " + ot1 + "<br>, Light Th0: " + light_th0 + "<br>, Light Th1: " + light_th1 + "<br>, Vfan : " + vfan + "<br>";
+  handleRoot();
+  // server.send(200, "text/html", s);
 }
 
 void add_to_json(char *buffer, String *json_buffer, const char *name, float data, bool last) {
@@ -59,7 +96,7 @@ void handleRaw() {
 }
 
 
-const char* ssid     = "WERKSTATT_WLAN";
+const char* ssid     = "NETGEAR_Repeater";
 const char* password = "XL12ABZXYGKIDO";
 
 /* exclude this to web_frontend.cpp causes exception 9 ... */
@@ -77,6 +114,7 @@ void setup_wifi() {
 
   server.on("/", handleRoot);
   server.on("/raw", handleRaw);
+  server.on("/change_values", handleChangeValues);
 
   server.begin();
 }
@@ -102,29 +140,32 @@ void setup() {
   fan_voltage_control.setup(AD5272_ADDR);
   fan_voltage_control.set_rdac(0);
   control_data.rdac = 0;
-  // setup_wifi();
-  sweep_rdac();
+  setup_wifi();
+  // sweep_rdac();
 }
 
-
-
-void loop() {
-  temp_sensors.read_temperature();
+void fill_data_table() {
   control_data.temperature_ambient = temp_sensors.get_ambient_temperature_degrees();
   control_data.temperature_probe0 = temp_sensors.get_probe0_temperature_degrees();
   control_data.temperature_probe1 = temp_sensors.get_probe1_temperature_degrees();
   control_data.voltage_lightsensor0 = adc.get_voltage_lightsensor0(); 
   control_data.voltage_lightsensor1 = adc.get_voltage_lightsensor1();
   control_data.voltage_fans = adc.get_voltage_fans();
+}
 
+void print_data() {
   Serial.printf("Ambient Temperature: %f°C\n", temp_sensors.get_ambient_temperature_degrees());
   Serial.printf("Probe 0 Temperature: %f°C\n", temp_sensors.get_probe0_temperature_degrees());
   Serial.printf("Probe 1 Temperature: %f°C\n", temp_sensors.get_probe1_temperature_degrees());
   Serial.printf("V_lightsensor_0: %f\n", adc.get_voltage_lightsensor0()); 
   Serial.printf("V_lightsensor_1: %f\n", adc.get_voltage_lightsensor1());
   Serial.printf("V_fan: %f\n", adc.get_voltage_fans());
+}
 
+void loop() {
+  temp_sensors.read_temperature();
+  fill_data_table();
+  print_data();
   server.handleClient();          //Handle client requests
-
   delay(1000);
 }
