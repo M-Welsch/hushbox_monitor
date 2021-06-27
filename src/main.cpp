@@ -10,6 +10,8 @@
 #include "fan_voltage_control.h"
 #include "temperature_readout.h"
 #include "web_frontend.h"
+#include "fan_tacho.h"
+#include "alarm_led.h"
 
 
 #define AD5272_ADDR 0x2F
@@ -20,6 +22,8 @@ Adc adc;
 AD5272_Class fan_voltage_control;
 ESP8266WebServer server(80);
 struct ControlData control_data;
+FanTacho fan_tacho;
+AlarmLed alarm_led;
 
 void handleRoot() {
   String s = HEAD;
@@ -42,6 +46,14 @@ void handleChangeValues() {
   if (ot1.compareTo("") != 0) {
     control_data.overtemperature_threshold_1 = ot1.toFloat();
   }
+  String ot_hyst0 = server.arg("ot_hyst0");
+  if (ot_hyst0.compareTo("") != 0) {
+    control_data.overtemperature_hysteresis_0 = ot_hyst0.toFloat();
+  }
+  String ot_hyst1 = server.arg("ot_hyst1");
+  if (ot_hyst1.compareTo("") != 0) {
+    control_data.overtemperature_hysteresis_1 = ot_hyst1.toFloat();
+  }
   String light_th0 = server.arg("light_th0");
   if (light_th0.compareTo("") != 0) {
     control_data.lightsensor0_threshold = light_th0.toFloat();
@@ -50,16 +62,13 @@ void handleChangeValues() {
   if (light_th1.compareTo("") != 0) {
     control_data.lightsensor1_threshold = light_th1.toFloat();
   }
-  String vfan = server.arg("Vfan");
+  String vfan = server.arg("vfan");
   if (vfan.compareTo("") != 0) {
+      Serial.printf("setting vfan to %fV", vfan.toFloat());
       fan_voltage_control.set_fan_voltage(vfan.toFloat());
-      // control_data.rdac = fan_voltage_control.get_rdac();
+      control_data.rdac = fan_voltage_control.get_rdac();
   }
-
-  String s = HEAD;
-  s = s + "OT0: " + ot0 +"<br>, OT1: " + ot1 + "<br>, Light Th0: " + light_th0 + "<br>, Light Th1: " + light_th1 + "<br>, Vfan : " + vfan + "<br>";
   handleRoot();
-  // server.send(200, "text/html", s);
 }
 
 void add_to_json(char *buffer, String *json_buffer, const char *name, float data, bool last) {
@@ -141,6 +150,8 @@ void setup() {
   fan_voltage_control.set_rdac(0);
   control_data.rdac = 0;
   setup_wifi();
+  alarm_led.setup();
+  // fan_tacho.setup(); // doesn't work
   // sweep_rdac();
 }
 
@@ -151,6 +162,7 @@ void fill_data_table() {
   control_data.voltage_lightsensor0 = adc.get_voltage_lightsensor0(); 
   control_data.voltage_lightsensor1 = adc.get_voltage_lightsensor1();
   control_data.voltage_fans = adc.get_voltage_fans();
+  control_data.rdac = fan_voltage_control.get_rdac();
 }
 
 void print_data() {
@@ -162,9 +174,17 @@ void print_data() {
   Serial.printf("V_fan: %.2f\n", adc.get_voltage_fans());
 }
 
+void handle_fault_conditions() {
+  if (control_data.overtemperature_0 or control_data.overtemperature_1 or control_data.light_0_on or control_data.light_1_on) {
+    alarm_led.flash(5, 2);
+  }
+}
+
 void loop() {
   temp_sensors.read_temperature();
   fill_data_table();
+  check_for_fault_conditions(&control_data);
+  handle_fault_conditions();
   print_data();
   server.handleClient();          //Handle client requests
   delay(1000);

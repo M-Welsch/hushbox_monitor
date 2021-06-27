@@ -14,10 +14,14 @@ struct ControlData {
     float overtemperature_hysteresis_1;
     float lightsensor0_threshold;
     float lightsensor1_threshold;
-
+    bool overtemperature_0;
+    bool overtemperature_1;
+    bool light_0_on;
+    bool light_1_on;
 };
 
 void setup_thresholds(ControlData *control_data);
 void add_table_row(char *buffer, String *html_buffer, const char *name, const char *unit, float data);
 void add_table_row(char *buffer, String *html_buffer, const char *name, const char *unit, int32 data);
 String concat_data_table(ControlData *control_data);
+void check_for_fault_conditions(ControlData *control_data);
