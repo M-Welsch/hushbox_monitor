@@ -6,10 +6,12 @@ void setup_thresholds(ControlData *control_data) {
     control_data->overtemperature_threshold_1 = 60;
     control_data->lightsensor0_threshold = 1.7;
     control_data->lightsensor1_threshold = 1.7;
+    control_data->overtemperature_hysteresis_0 = 20;
+    control_data->overtemperature_hysteresis_1 = 20;
 }
 
 void add_table_row(char *buffer, String *html_buffer, const char *name, const char *unit, float data) {
-    sprintf(buffer, "<tr><td>%s</td><td>%f %s</td></tr>", name, data, unit);
+    sprintf(buffer, "<tr><td>%s</td><td>%.2f %s</td></tr>", name, data, unit);
     html_buffer->concat(buffer);
 }
 
@@ -31,7 +33,9 @@ String concat_data_table(ControlData *control_data) {
     add_table_row(buffer, &html_code, "Fan Voltage", "V", control_data->voltage_fans);
     add_table_row(buffer, &html_code, "Rdac", "digits", control_data->rdac);
     add_table_row(buffer, &html_code, "Overtemperature Threshold 0", "&#176;C", control_data->overtemperature_threshold_0);
+    add_table_row(buffer, &html_code, "Overtemperature Hysteresis 0", "&#176;C", control_data->overtemperature_hysteresis_0);
     add_table_row(buffer, &html_code, "Overtemperature Threshold 1", "&#176;C", control_data->overtemperature_threshold_1);
+    add_table_row(buffer, &html_code, "Overtemperature Hysteresis 1", "&#176;C", control_data->overtemperature_hysteresis_1);
     add_table_row(buffer, &html_code, "Lightsensor 0 Threshold", "V", control_data->lightsensor0_threshold);
     add_table_row(buffer, &html_code, "Lightsensor 1 Threshold", "V", control_data->lightsensor1_threshold);
     html_code.concat("</tbody></table>");

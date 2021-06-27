@@ -96,7 +96,7 @@ void handleRaw() {
 }
 
 
-const char* ssid     = "NETGEAR_Repeater";
+const char* ssid     = "WERKSTATT_WLAN";
 const char* password = "XL12ABZXYGKIDO";
 
 /* exclude this to web_frontend.cpp causes exception 9 ... */
@@ -154,12 +154,12 @@ void fill_data_table() {
 }
 
 void print_data() {
-  Serial.printf("Ambient Temperature: %f°C\n", temp_sensors.get_ambient_temperature_degrees());
-  Serial.printf("Probe 0 Temperature: %f°C\n", temp_sensors.get_probe0_temperature_degrees());
-  Serial.printf("Probe 1 Temperature: %f°C\n", temp_sensors.get_probe1_temperature_degrees());
-  Serial.printf("V_lightsensor_0: %f\n", adc.get_voltage_lightsensor0()); 
-  Serial.printf("V_lightsensor_1: %f\n", adc.get_voltage_lightsensor1());
-  Serial.printf("V_fan: %f\n", adc.get_voltage_fans());
+  Serial.printf("Ambient Temperature: %.2f°C\n", temp_sensors.get_ambient_temperature_degrees());
+  Serial.printf("Probe 0 Temperature: %.2f°C\n", temp_sensors.get_probe0_temperature_degrees());
+  Serial.printf("Probe 1 Temperature: %.2f°C\n", temp_sensors.get_probe1_temperature_degrees());
+  Serial.printf("V_lightsensor_0: %.2f\n", adc.get_voltage_lightsensor0()); 
+  Serial.printf("V_lightsensor_1: %.2f\n", adc.get_voltage_lightsensor1());
+  Serial.printf("V_fan: %.2f\n", adc.get_voltage_fans());
 }
 
 void loop() {

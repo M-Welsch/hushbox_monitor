@@ -9,9 +9,12 @@ struct ControlData {
     float voltage_fans;
     uint16_t rdac;
     float overtemperature_threshold_0;
+    float overtemperature_hysteresis_0;
     float overtemperature_threshold_1;
+    float overtemperature_hysteresis_1;
     float lightsensor0_threshold;
     float lightsensor1_threshold;
+
 };
 
 void setup_thresholds(ControlData *control_data);
