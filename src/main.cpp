@@ -177,6 +177,7 @@ void print_data() {
 void handle_fault_conditions() {
   if (control_data.overtemperature_0 or control_data.overtemperature_1 or control_data.light_0_on or control_data.light_1_on) {
     alarm_led.flash(5, 2);
+    fan_voltage_control.set_fan_voltage(12);
   }
 }
 
